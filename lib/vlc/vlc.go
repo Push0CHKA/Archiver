@@ -1,113 +1,26 @@
 package vlc
 
 import (
-	"fmt"
-	"strconv"
 	"strings"
 	"unicode"
-	"unicode/utf8"
 )
 
-type HexChunks []HexChunk
-
-type HexChunk string
-
-type BinaryChunks []BinaryChunk
-
-type BinaryChunk string
-
-type encodingTable map[rune]string
-
-const chunkSize = 8
-
 // encode string to hex chunk of strings
-func Encode(str string) string {
+func Encode(str string) []byte {
 	str = prepareText(str)
 
 	chunks := splitByChunks(encodeBin(str), chunkSize)
 
-	return chunks.ToHex().ToString()
+	return chunks.Bytes()
 }
 
-// splitByChunks split binary string by chunks with given,
-// i.g.: '100101011001010110010101' -> '10010101 10010101 10010101'
-func splitByChunks(bStr string, chunkSize int) BinaryChunks {
-	strLen := utf8.RuneCountInString(bStr)
-	chunkCount := strLen / chunkSize
+// decode encoded string
+func Decode(encodedData []byte) string {
+	bString := NewBinChunks(encodedData).Join()
 
-	if strLen/chunkSize != 0 {
-		chunkCount++
-	}
+	dTree := getEncodingTable().DecodeTree()
 
-	res := make(BinaryChunks, 0, chunkCount)
-
-	var buf strings.Builder
-
-	for i, ch := range bStr {
-		buf.WriteString(string(ch))
-
-		if (i+1)%chunkSize == 0 {
-			res = append(res, BinaryChunk(buf.String()))
-			buf.Reset()
-		}
-	}
-
-	if buf.Len() != 0 {
-		lastChunk := buf.String()
-		lastChunk += strings.Repeat("0", chunkSize-len(lastChunk))
-
-		res = append(res, BinaryChunk(lastChunk))
-	}
-
-	return res
-}
-
-func (hchs HexChunks) ToString() string {
-	const sep = " "
-
-	switch len(hchs) {
-	case 0:
-		return ""
-	case 1:
-		return string(hchs[0])
-	}
-
-	var buf strings.Builder
-
-	for i, hc := range hchs {
-		buf.WriteString(string(hc))
-
-		if i < len(hchs)-1 {
-			buf.WriteString(sep)
-		}
-	}
-
-	return buf.String()
-}
-
-func (bchs BinaryChunks) ToHex() HexChunks {
-	res := make(HexChunks, 0, len(bchs))
-
-	for _, chunk := range bchs {
-		res = append(res, chunk.ToHex())
-	}
-
-	return res
-}
-
-func (bch BinaryChunk) ToHex() HexChunk {
-	num, err := strconv.ParseUint(string(bch), 2, chunkSize)
-	if err != nil {
-		panic("can`t parse binary chunk: " + err.Error())
-	}
-
-	res := strings.ToUpper(fmt.Sprintf("%x", num))
-
-	if len(res) == 1 {
-		res = "0" + res
-	}
-
-	return HexChunk(res)
+	return exportText(dTree.Decode(bString))
 }
 
 // encodeBin encodes str into binary codes without spaces
@@ -121,6 +34,7 @@ func encodeBin(str string) string {
 	return buf.String()
 }
 
+// bin return character code from vlc
 func bin(ch rune) string {
 	table := getEncodingTable()
 
@@ -167,8 +81,9 @@ func getEncodingTable() encodingTable {
 }
 
 // prepareText prepares text to be fit for encode:
-// changes upper case letters to: ! + lower case letter
-// i.g.: My name is Nikita -> !my name is !nikita
+// changes upper case letters to: ! + lower case letter.
+//
+// i.g.: My name is Nikita -> !my name is !nikita.
 func prepareText(str string) string {
 	var buf strings.Builder
 
@@ -179,6 +94,32 @@ func prepareText(str string) string {
 		} else {
 			buf.WriteRune(ch)
 		}
+	}
+
+	return buf.String()
+}
+
+// exportText is opposite to prepareText, it prepares decoded text to export:
+// it changes: ! + <lower case letter> -> to upper case letter.
+//
+//	i.g.: !my name is !nikita -> My name is Nikita.
+func exportText(str string) string {
+	var buf strings.Builder
+
+	var isCapital bool
+	for _, ch := range str {
+		if ch == '!' {
+			isCapital = true
+			continue
+		}
+
+		if isCapital {
+			buf.WriteRune(unicode.ToUpper(ch))
+			isCapital = false
+			continue
+		}
+
+		buf.WriteRune(ch)
 	}
 
 	return buf.String()

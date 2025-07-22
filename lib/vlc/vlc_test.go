@@ -64,71 +64,43 @@ func Test_encodeBin(t *testing.T) {
 	}
 }
 
-func Test_splitByChunks(t *testing.T) {
-	type args struct {
-		bStr      string
-		chunkSize int
-	}
-	tests := []struct {
-		name string
-		args args
-		want BinaryChunks
-	}{
-		{
-			name: "base name",
-			args: args{
-				bStr:      "001000100110100101",
-				chunkSize: 8,
-			},
-			want: BinaryChunks{"00100010", "01101001", "01000000"},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := splitByChunks(tt.args.bStr, tt.args.chunkSize); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("splitByChunks() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_BinaryChunks_ToHex(t *testing.T) {
-	tests := []struct {
-		name string
-		bchs BinaryChunks
-		want HexChunks
-	}{
-		{
-			name: "base test",
-			bchs: BinaryChunks{"0101111", "10000000"},
-			want: HexChunks{"2F", "80"},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.bchs.ToHex(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("BinaryChunks.ToHex() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func Test_Encode(t *testing.T) {
 	tests := []struct {
 		name string
 		str  string
-		want string
+		want []byte
 	}{
 		{
 			name: "base test",
 			str:  "My name is Ted",
-			want: "20 30 3C 18 77 4A E4 4D 28",
+			want: []byte{32, 48, 60, 24, 119, 74, 228, 77, 40},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := Encode(tt.str); got != tt.want {
+			if got := Encode(tt.str); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Encode() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_Decode(t *testing.T) {
+	tests := []struct {
+		name        string
+		encodedData []byte
+		want        string
+	}{
+		{
+			name:        "base test",
+			encodedData: []byte{32, 48, 60, 24, 119, 74, 228, 77, 40},
+			want:        "My name is Ted",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Decode(tt.encodedData); got != tt.want {
+				t.Errorf("Decode() = %v, want %v", got, tt.want)
 			}
 		})
 	}
