@@ -3,6 +3,8 @@ package vlc
 import (
 	"reflect"
 	"testing"
+	* "archiver/lib/compression/vlc/table"
+	
 )
 
 func Test_encodingTable_DecodeTree(t *testing.T) {

@@ -11,8 +11,6 @@ type BinaryChunks []BinaryChunk
 
 type BinaryChunk string
 
-type encodingTable map[rune]string
-
 const chunkSize = 8
 
 func NewBinChunks(data []byte) BinaryChunks {

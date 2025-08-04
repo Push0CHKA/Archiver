@@ -1,6 +1,7 @@
 package vlc
 
 import (
+	"archiver/lib/compression/vlc/table"
 	"strings"
 	"unicode"
 )
@@ -52,8 +53,8 @@ func bin(ch rune) string {
 	return res
 }
 
-func getEncodingTable() encodingTable {
-	return encodingTable{
+func getEncodingTable() table.EncodingTable {
+	return table.EncodingTable{
 		' ': "11",
 		't': "1001",
 		'n': "10000",
