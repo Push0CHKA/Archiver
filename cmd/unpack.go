@@ -3,6 +3,7 @@ package cmd
 import (
 	"archiver/lib/compression"
 	"archiver/lib/compression/vlc"
+	shennonfano "archiver/lib/compression/vlc/table/shennon-fano"
 	"io"
 	"os"
 	"path/filepath"
@@ -30,7 +31,7 @@ func unpack(cmd *cobra.Command, args []string) {
 
 	switch method {
 	case "vlc":
-		decoder = vlc.New()
+		decoder = vlc.New(shennonfano.New())
 	default:
 		cmd.PrintErr("unknown decompress method")
 	}

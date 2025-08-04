@@ -14,6 +14,12 @@ type decodingTree struct {
 
 type EncodingTable map[rune]string
 
+func (et EncodingTable) Decode(str string) string {
+	dt := et.DecodeTree()
+
+	return dt.Decode(str)
+}
+
 func (dt *decodingTree) Decode(str string) string {
 	var buf strings.Builder
 

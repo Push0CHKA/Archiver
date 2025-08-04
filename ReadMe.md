@@ -2,5 +2,5 @@
 
 - go build
 
-#### Variable-Lenth Code pack
+#### Shennon-Fano alg
 - ./archiver.exe pack vlc {file_path}
