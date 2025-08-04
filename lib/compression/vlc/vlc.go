@@ -5,8 +5,14 @@ import (
 	"unicode"
 )
 
+type EncoderDecoder struct{}
+
+func New() EncoderDecoder {
+	return EncoderDecoder{}
+}
+
 // encode string to hex chunk of strings
-func Encode(str string) []byte {
+func (_ EncoderDecoder) Encode(str string) []byte {
 	str = prepareText(str)
 
 	chunks := splitByChunks(encodeBin(str), chunkSize)
@@ -15,7 +21,7 @@ func Encode(str string) []byte {
 }
 
 // decode encoded string
-func Decode(encodedData []byte) string {
+func (_ EncoderDecoder) Decode(encodedData []byte) string {
 	bString := NewBinChunks(encodedData).Join()
 
 	dTree := getEncodingTable().DecodeTree()
